@@ -1,4 +1,4 @@
-﻿<#
+<#
   oneclick.ps1 - restore a whole DSH setup on a fresh Windows machine.
 
   Double-click 恢复DSH.cmd (or 一键恢复DSH.cmd). It will:
@@ -198,7 +198,15 @@ if ($DryRun) {
     $env:GIT_CONFIG_VALUE_0 = 'true'
     try {
         & git clone --branch $BackupRef --single-branch $cloneUrl (Join-Path $stage 'repo') 2>&1 | ForEach-Object { $_.ToString() }
-        if ($LASTEXITCODE -ne 0) { Fail 'git clone failed (token scope? repository name?)' }
+        if ($LASTEXITCODE -ne 0) {
+            # github.com:443 is blocked on some networks; ssh.github.com:443 is not.
+            Remove-Item -LiteralPath (Join-Path $stage 'repo') -Recurse -Force -ErrorAction SilentlyContinue
+            $sshUrl = $BackupRepo
+            if ($sshUrl -match '^https://github\.com/(.+)$') { $sshUrl = 'ssh://git@ssh.github.com:443/' + $Matches[1] }
+            Write-Warn2 'https clone failed; retrying over SSH (ssh.github.com:443, needs a key on GitHub)'
+            & git clone --branch $BackupRef --single-branch $sshUrl (Join-Path $stage 'repo') 2>&1 | ForEach-Object { $_.ToString() }
+        }
+        if ($LASTEXITCODE -ne 0) { Fail 'git clone failed (token scope? repository name? network?)' }
     } finally {
         if ($token) { $env:GIT_CONFIG_GLOBAL = $savedGlobal }
         $env:GIT_CONFIG_COUNT = $savedCount
