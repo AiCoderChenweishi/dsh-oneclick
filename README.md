@@ -1,4 +1,4 @@
-# DSH 一键恢复（one-click restore）
+﻿# DSH 一键恢复（one-click restore）
 
 在一台**全新 Windows 电脑**上，双击一次即可：安装 DeepSeek Harness → 拉取私有备份仓库 → 还原 `%USERPROFILE%\.dsh` → 注册每日备份任务。
 
@@ -30,6 +30,11 @@
 - MCP 密钥 / OAuth 授权（导出文件中是 `<REDACTED>`，需重填；Cloudflare 需重新授权）
 - 语音模型、`dsh-runtimes` 运行时二进制（新机首次启动自动生成）
 
+## 网络受限时
+
+- `github.com:443` 被阻断时，脚本克隆会自动重试 `ssh.github.com:443`（需要把本机 SSH 公钥加到 GitHub）。
+- `raw.githubusercontent.com` 被阻断时，`.cmd` 会自动改走 `gh-proxy.com` 镜像下载 `oneclick.ps1`。
+- 两条都不可用时：在能上网的机器上下载本仓库 ZIP，解压后直接双击 `恢复DSH.cmd`。
 ## 恢复到某一天
 
 备份仓库每天打一个 `backup/YYYY-MM-DD` tag。恢复旧状态：
